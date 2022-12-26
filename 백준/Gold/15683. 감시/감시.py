@@ -1,44 +1,58 @@
 import sys
 import copy
 
-di2v = {'U': (-1, 0), 'D': (1, 0), 'L': (0, -1), 'R': (0, 1)}
-cam_angle = {1: ['U', 'D', 'L', 'R'], 2: ['UD', 'LR'], 3: ['UR', 'RD', 'DL', 'LU'], 4: ['UDL', 'UDR', 'ULR', 'DLR'],
-             5: ['UDLR']}
 N, M = map(int, sys.stdin.readline().split())
-global office
-office = [list(map(int, sys.stdin.readline().split())) for i in range(N)]
-cam_info = [(office[i][j], (i, j)) for i in range(N) for j in range(M) if
-            1 <= office[i][j] <= 5]  # 사무실에 존재하는 (카메라 모델 번호, 좌표)를 저장한다.
-cam_count = len(cam_info)  # 사무실에 존재하는 카메라 개수 저장
-ans = []
+board = [list(map(int, sys.stdin.readline().split())) for _ in range(N)]
 
+zero_cnt = 0
+cam_spot = []
 
-def dfs(cnt):  # 카메라의 모델을 depth/ 각각의 방향을 width로하는 상태트리 탐색
-    global office
-    if cnt == cam_count:
-        ans.append(sum([office[i].count(0) for i in range(N)]))
-        return
-    model_num, (x, y) = cam_info[cnt]
-    angles = cam_angle[model_num]
-    for angle in angles:
-        org = copy.deepcopy(office)  # 다음 depth의 dfs가 종료되면 원상태로 되돌아 오기 위해 원보 사무실을 저장한다.
-        for di in angle:
-            dx, dy = di2v[di]
-            tmp_x, tmp_y = x, y
-            while 1: #카메라가 볼 수 있는 영역 체크
-                nx = tmp_x + dx
-                ny = tmp_y + dy
-                if 0 <= nx < N and 0 <= ny < M:
-                    if office[nx][ny] == 0:
-                        office[nx][ny] = '#'
-                    elif office[nx][ny] == 6:
-                        break
-                else:
-                    break
-                tmp_x, tmp_y = nx, ny
-        dfs(cnt + 1)
-        office = copy.deepcopy(org)
+for i in range(N):
+  for j in range(M):
+    if board[i][j] == 0:
+      zero_cnt += 1
+    elif board[i][j] != 6:
+      cam_spot.append([i, j])
 
+cam_cnt = len(cam_spot)
+
+di = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
+cam_sights_by_type = {1: ['U', 'D', 'L', 'R'],
+                      2: ['UD', 'LR'],
+                      3: ['UR', 'RD', 'DL', 'LU'],
+                      4: ['ULR', 'RDU', 'DLR', 'LUD'],
+                      5: ['UDLR']
+                      }
+
+board_stack = [[board, zero_cnt]]
+candid = []
+
+def dfs(cnt):
+  if cnt == cam_cnt:
+    last_zero_cnt = board_stack[-1][1]
+    candid.append(last_zero_cnt)
+    return
+
+  cur_cam_spot = cam_spot[cnt]
+  cur_cam_type = board[cur_cam_spot[0]][cur_cam_spot[1]]
+  cur_cam_sights = cam_sights_by_type[cur_cam_type]
+  board_stack_top = board_stack[-1]
+  for cur_cam_sight in cur_cam_sights:
+    cur_board = copy.deepcopy(board_stack_top[0])
+    cur_zero_cnt = board_stack_top[1]
+    for direction in cur_cam_sight:
+      r, c = cur_cam_spot
+      while 0 <= r < N and 0 <= c < M:
+        if cur_board[r][c] == 0:
+          cur_board[r][c] = -1
+          cur_zero_cnt -= 1
+        elif cur_board[r][c] == 6:
+          break
+        r += di[direction][0]
+        c += di[direction][1]
+    board_stack.append([cur_board,cur_zero_cnt])
+    dfs(cnt+1)
+    board_stack.pop()
 
 dfs(0)
-print(min(ans))
+print(min(candid))
