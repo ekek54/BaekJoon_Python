@@ -1,51 +1,53 @@
-from collections import deque
 import sys
-wheel=[]
-for i in range(4):
-    arr=sys.stdin.readline().rstrip('\n')
-    wheel_info=[arr[j] for j in range(8)]
-    wheel.append(deque(map(int,wheel_info)))
 
-def get_between(wheel):
-    res=[]
+wheel_list = [{'state': list(map(int, list(sys.stdin.readline().rstrip('\n')))), 'left': 6, 'right': 2, 'top': 0} for _
+              in
+              range(4)]
+wheel_size = 8
+N = int(sys.stdin.readline())
+visit = [False for _ in range(4)]
+score = 0
 
-    for i in range(3):
-        if wheel[i][2]!=wheel[i+1][6]:
-            res.append(1)
-        else:
-            res.append(0)
-    return res
 
-def wheel_spin(wheel_num,spin):
-    if spin==-1:
-        tmp=wheel[wheel_num].popleft()
-        wheel[wheel_num].append(tmp)
-    elif spin==1:
-        tmp = wheel[wheel_num].pop()
-        wheel[wheel_num].insert(0,tmp)
-    return
+# 톱니바퀴 회전
+def rotate(wheel_num, clockwise):
+  if clockwise == 1:
+    wheel_list[wheel_num]['left'] = (wheel_list[wheel_num]['left'] - 1) % wheel_size
+    wheel_list[wheel_num]['right'] = (wheel_list[wheel_num]['right'] - 1) % wheel_size
+    wheel_list[wheel_num]['top'] = (wheel_list[wheel_num]['top'] - 1) % wheel_size
+  else:
+    wheel_list[wheel_num]['left'] = (wheel_list[wheel_num]['left'] + 1) % wheel_size
+    wheel_list[wheel_num]['right'] = (wheel_list[wheel_num]['right'] + 1) % wheel_size
+    wheel_list[wheel_num]['top'] = (wheel_list[wheel_num]['top'] + 1) % wheel_size
 
-N=int(sys.stdin.readline())
+
+# 회전의 전파후 회전
+def propagate(wheel_num, clockwise):
+  visit[wheel_num] = True
+  if 1 <= wheel_num:
+    if not visit[wheel_num - 1]:
+      if wheel_list[wheel_num]['state'][wheel_list[wheel_num]['left']] != wheel_list[wheel_num - 1]['state'][
+        wheel_list[wheel_num - 1]['right']]:
+        propagate(wheel_num - 1, clockwise * -1)
+  if wheel_num < 3:
+    if not visit[wheel_num + 1]:
+      if wheel_list[wheel_num]['state'][wheel_list[wheel_num]['right']] != wheel_list[wheel_num + 1]['state'][
+        wheel_list[wheel_num + 1]['left']]:
+        propagate(wheel_num + 1, clockwise * -1)
+  rotate(wheel_num, clockwise)
+  return
+
+
 for i in range(N):
-    spins = [0, 0, 0, 0]
-    wheel_num, spin = map(int, sys.stdin.readline().split())
-    wheel_num -= 1  # 1,2,3,4 => 0,1,2,3
-    spins[wheel_num] = spin
-    between = get_between(wheel)
-    l=wheel_num-1
-    r=wheel_num+1
-    while l>=0:
-        if between[l]==1:
-            spins[l] = 1 if spins[l + 1] == -1 else -1
-            l-=1
-        else:
-            break
-    while r<4:
-        if between[r-1]==1:
-            spins[r] = 1 if spins[r-1] == -1 else -1
-            r+=1
-        else:
-            break
-    for idx,s in enumerate(spins):
-        wheel_spin(idx,s)
-print(sum([wheel[i][0]*(2**i) for i in range(4)]))
+  visit = [False for _ in range(4)]
+  wheel_num, clockwise = map(int, sys.stdin.readline().split())  # 바퀴 번호 1 ~ 4, 시계방향 1, 반시계 -1
+  wheel_num -= 1  # 0 ~ 3
+  propagate(wheel_num, clockwise)
+
+# 점수 계산
+for i in range(4):
+  top = wheel_list[i]['top']
+  if wheel_list[i]['state'][top] == 1:
+    score += 2 ** i
+
+print(score)
