@@ -59,7 +59,7 @@ def bfs():
   visit = [[[False for j in range(N)] for i in range(N)] for k in range(N)]
   que = deque()
   map = [rotated_boards[board_stack[i]][rotate_stack[i]] for i in range(len(board_stack))]
-  if map[0][0][0] == 0:
+  if map[0][0][0] == 0 or map[4][4][4] == 0:
     return 130
   distance = [[[0 for j in range(N)] for i in range(N)] for k in range(N)]
   que.append((0, 0, 0))
@@ -73,7 +73,7 @@ def bfs():
       nc = cur_c + dc[i]
       nz = cur_z + dz[i]
       if whitin_range(nr) and whitin_range(nc) and whitin_range(nz):
-        if not visit[nr][nc][nz] and map[nr][nc][nz] == 1 and distance:
+        if not visit[nr][nc][nz] and map[nr][nc][nz] == 1:
           distance[nr][nc][nz] = distance[cur_r][cur_c][cur_z] + 1
           visit[nr][nc][nz] = True
           que.append((nr, nc, nz))
