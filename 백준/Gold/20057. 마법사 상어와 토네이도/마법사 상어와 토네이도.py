@@ -1,49 +1,70 @@
 import sys
-di2v = {'U': (-1, 0), 'D': (1, 0), 'L': (0, -1), 'R': (0, 1)}  # 방향 벡터
-def wind(y,di,board): #현재 좌표X에서 좌표Y로의 태풍 이동에의한 모래이동을 계산해 보드에 적용해주는 함수
-    N=len(board)
-    rel_di = {'U': {'u': 'U', 'd': 'D', 'l': 'L', 'r': 'R'}, 'D': {'u': 'D', 'd': 'U', 'l': 'R', 'r': 'L'},
-              'L': {'u': 'L', 'd': 'R', 'l': 'D', 'r': 'U'}, 'R': {'u': 'R', 'd': 'L', 'l': 'U', 'r': 'D'}}  # 상대 방향
-    out=0
-    sand=board[y[0]][y[1]]
-    per = [('l', 0.07), ('r', 0.07), ('ll', 0.02), ('rr', 0.02), ('ld', 0.01), ('rd', 0.01), ('ru', 0.1), ('lu', 0.1),
-           ('uu', 0.05),('u',-1)]
-    for i in range(len(per)):
-        go,percent=per[i]
-        r, c = y
-        for d in go:
-            conv_di=rel_di[di][d]
-            r+=di2v[conv_di][0]
-            c+=di2v[conv_di][1]
-        if 0<=r<N and 0<=c<N:
-            move = int(board[y[0]][y[1]] * percent) if percent != -1 else sand
-            sand -= move
-            board[r][c] += move
-        else:
-            move = int(board[y[0]][y[1]] * percent) if percent != -1 else sand
-            sand -= move
-            out += move
-    board[y[0]][y[1]]=0
-    return out
+from collections import deque
+from copy import deepcopy
 
-N=int(sys.stdin.readline())
-board=[list(map(int,sys.stdin.readline().split())) for i in range(N)]
-x = (N//2, N//2)
-spin = ('L', 'D', 'R', 'U')
-out = 0
-idx=0
-cnt=1
-switch=0
-while x != (0,0):
-    di=spin[idx]
-    for _ in range(cnt):
-        y=(x[0]+di2v[di][0],x[1]+di2v[di][1])
-        out+=wind(y,di,board)
-        x=y[:]
-        if x == (0,0):
-            break
-    switch+=1
-    if switch%2==0:
-        cnt+=1
-    idx=(idx+1)%4
-print(out)
+def pb(board):
+  for i in range(len(board)):
+    print(board[i])
+  print('')
+def rotate(r, board):
+  N = len(board)
+  M = len(board[0])
+  if r == 0:
+    return board
+  if r == 3:
+    return [[board[N - 1 - j][i] for j in range(N)] for i in range(M)]
+  if r == 2:
+    return [[board[N - 1 - i][M - 1 - j] for j in range(M)] for i in range(N)]
+  if r == 1:
+    return [[board[j][M - 1 - i] for j in range(N)] for i in range(M)]
+
+N = int(sys.stdin.readline())
+board = [list(map(int, sys.stdin.readline().split())) for _ in range(N)]
+out_sand = 0
+MOVE_BOARD = [[0, 0, 2, 0, 0],
+              [0, 10, 7, 1, 0],
+              [5, 0, 0, 0, 0],
+              [0, 10, 7, 1, 0],
+              [0, 0, 2, 0, 0]]
+# 좌, 하, 우, 상
+dr = [0, 1, 0, -1]
+dc = [-1, 0, 1, 0]
+di_moves = [rotate(i, MOVE_BOARD) for i in range(4)]
+
+
+def move(r, c, di):
+  global out_sand
+  nr = r + dr[di]
+  nc = c + dc[di]
+  cur_sand = board[nr][nc]
+  remain_sand = cur_sand
+  for i in range(nr - 2, nr + 3):
+    for j in range(nc - 2, nc + 3):
+      move_sand = int((di_moves[di][i - (nr - 2)][j - (nc - 2)] / 100) * cur_sand)
+      #print(move_sand)
+      remain_sand -= move_sand
+      if 0 <= i < N and 0 <= j < N:
+        board[i][j] += move_sand
+      else:
+        out_sand += move_sand
+  ar = nr + dr[di]
+  ac = nc + dc[di]
+  if 0 <= ar < N and 0 <= ac < N:
+    board[ar][ac] += remain_sand
+  else:
+    out_sand += remain_sand
+  board[nr][nc] = 0
+  return (nr, nc)
+
+
+r, c = N // 2, N // 2
+cnt = 0
+while r != 0 or c != 0:
+  dist = cnt // 2 + 1
+  di = cnt % 4
+  for _ in range(dist):
+    if r == 0 and c == 0:
+      break
+    r,c = move(r, c, di)
+  cnt += 1
+print(out_sand)
