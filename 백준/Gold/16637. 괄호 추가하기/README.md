@@ -1,4 +1,4 @@
-# [Gold IV] 괄호 추가하기 - 16637 
+# [Gold III] 괄호 추가하기 - 16637 
 
 [문제 링크](https://www.acmicpc.net/problem/16637) 
 
