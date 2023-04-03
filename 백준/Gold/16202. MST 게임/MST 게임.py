@@ -1,48 +1,61 @@
 import sys
-input=sys.stdin.readline
 from collections import deque
 
-def Find(x):
+N, M, K = map(int, sys.stdin.readline().split())
+edge_list = deque()
+parent = [i for i in range(N)]
 
-    if x!=disjoint[x]:
-        disjoint[x]=Find(disjoint[x])
-    return disjoint[x]
+def find(a):
+  if a == parent[a]:
+    return a
+  else:
+    parent[a] = find(parent[a])
+    return parent[a]
 
-N,M,K=map(int,input().split())
 
-edge=deque()
+def union(a, b):
+  a = find(a)
+  b = find(b)
+  if a < b:
+    parent[b] = a
+    return True
+  elif a > b:
+    parent[a] = b
+    return True
+  else:
+    return False
+
 
 for i in range(M):
+  x, y = map(int, sys.stdin.readline().split())
+  x -= 1
+  y -= 1
+  edge_list.append((x, y, i + 1))
 
-    u,v=map(int,input().split())
+answer = []
+round = 0
+while round < K:
+  round += 1
+  score = 0
+  parent = [i for i in range(N)]
+  cnt = 0
+  #(edge_list)
+  for i in range(len(edge_list)):
+    x, y, w = edge_list[i]
+    if union(x, y):
+      score += w
+      cnt += 1
+    if cnt == N - 1:
+      break
 
-    edge.append((i+1,u,v))
+  if cnt == N - 1:
+    edge_list.popleft()
+    answer.append(score)
+  else:
+    break
 
-for i in range(K):
 
-    disjoint = [_ for _ in range(N + 1)] ; total=0
+while len(answer) != K:
+  answer.append(0)
 
-    for j in range(len(edge)):
-
-        x=Find(edge[j][1])
-        y=Find(edge[j][2])
-
-        if x!=y:
-            if x>y:
-                disjoint[x]=y
-            else:
-                disjoint[y]=x
-            total+=edge[j][0]
-
-    check=set()
-
-    for j in range(1,N+1):
-
-        if Find(j) not in check:
-            check.add(Find(j))
-
-    if len(check)>1:
-        print(0 , end=" ")
-    else:
-        print(total, end=" ")
-    edge.popleft()
+print(*answer)
