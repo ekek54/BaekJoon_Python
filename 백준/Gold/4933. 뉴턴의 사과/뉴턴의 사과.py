@@ -4,21 +4,17 @@ N = int(sys.stdin.readline())
 global idx
 idx = -1
 
-def make_tree(tree_post_ord, tree_dict):
-  global idx
-  cur_node = tree_post_ord[idx]
-  if cur_node == 'nil':
-    return
-  if not cur_node in tree_dict:
-    tree_dict[cur_node] = ['nil', 'nil']
-  idx -= 1
-  #print(idx)
-  tree_dict[cur_node][1] = tree_post_ord[idx]
-  make_tree(tree_post_ord, tree_dict)
-  idx -= 1
-  tree_dict[cur_node][0] = tree_post_ord[idx]
-  make_tree(tree_post_ord, tree_dict)
-  return
+def make_tree(post_ord, tree_dict):
+  stack = []
+  for node in post_ord:
+    #print(stack)
+    if node == 'nil':
+      stack.append(node)
+    else:
+      tree_dict[node] = ['','']
+      tree_dict[node][1] = stack.pop()
+      tree_dict[node][0] = stack.pop()
+      stack.append(node)
 
 
 for _ in range(N):
@@ -28,10 +24,8 @@ for _ in range(N):
   B_input.pop()
   A_tree = {}
   B_tree = {}
-  idx = -1
   make_tree(A_input, A_tree)
   #print(A_tree)
-  idx = -1
   make_tree(B_input, B_tree)
   #print(B_tree)
   if tuple(sorted(A_tree.keys())) != tuple(sorted(B_tree.keys())):
