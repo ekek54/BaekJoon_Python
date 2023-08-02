@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import sys
 
 N, L = map(int, sys.stdin.readline().split())
@@ -52,3 +53,40 @@ for i in range(N):
         #print(col)
         cnt += 1
 print(cnt)
+=======
+import sys
+
+def add(a,b):
+    return a+b
+
+def substract(a,b):
+    return a-b
+
+def multiply(a,b):
+    return a*b
+
+calc = {"+":add, "-":substract, "*":multiply}
+
+
+N = int(sys.stdin.readline())
+calcFormula = sys.stdin.readline()
+numbers = []
+symbols = []
+DP=[0 for i in range(N//2+1)]
+for i in range(N):
+    if i%2 == 0:
+        numbers.append(calcFormula[i])
+    else:
+        symbols.append(calcFormula[i])
+if N == 1:
+    print(int(calcFormula[0]))
+else:
+    for i in range(N//2+1):
+        if i == 0:
+            DP[i] = numbers[i]
+        elif i == 1:
+            DP[i] = calc[symbols[i]](numbers[i-1],numbers[i])
+        else:
+            DP[i] = max(calc[symbols[i-1]](DP[i-2],calc[symbols[i]](numbers[i-1],numbers[i])),calc[symbols[i]](DP[i-1],numbers[i]))
+print(DP)
+>>>>>>> Stashed changes
