@@ -21,10 +21,12 @@ public class Main {
             rails[i] += rails[i - 1];
         }
 
-        int answer = 0;
+        long answer = 0;
 
         for (int i = 0; i < N - 1; i++) {
-            answer += Math.min(rails[i] * A[i], rails[i] * B[i] + C[i]);
+            long ticketFee = (long) rails[i] * A[i];
+            long cardFee = (long) rails[i] * B[i] + C[i];
+            answer += Math.min(ticketFee, cardFee);
         }
         System.out.println(answer);
     }
@@ -51,5 +53,8 @@ public class Main {
         }
     }
 
+    private long longMin(long a, long b){
+        return Math.min(a, b);
+    }
 
 }
